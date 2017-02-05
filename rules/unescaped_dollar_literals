@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+
+function _zlint_rule_unescaped_dollar_literals() {
+  local line="$@"
+
+  pcre_compile '"(.*[^\\](\$)[^a-z_?!\#@*{}]+.*|\$)"'
+
+  if pcre_match $line; then
+    echo 'Dollar literals in double-quoted strings must be escaped'
+    return 1
+  fi
+}

@@ -1,0 +1,210 @@
+#!/usr/bin/env zsh
+
+autoload -Uz crash && crash register
+zmodload zsh/pcre
+
+# Source the list of rules
+typeset -a _zlint_rules
+_zlint_rules=($(ls 'rules'))
+
+###
+# Format a list of errors and output them to the screen
+###
+function _zlint_report_errors() {
+  local line="$1"
+  local -a errors; errors=("${(@)@:2}")
+
+  # Echo the line of code which raised the errors first
+  echo "  \033[0;38;5;242m${line## }\033[0;m"
+
+  # If errors exist, print the first one alongside the heading
+  # and then remove it from the list
+  if (( ${#errors} > 0 )); then
+    echo "  \033[4;31mErrors:\033[0;m    \033[0;38;5;242m•\033[0;m $(_zlint_wordwrap_error ${errors[1]})"
+    shift errors
+  fi
+
+  # Loop through each of the errors and add them to the list
+  for error in $errors; do
+    echo "             \033[0;38;5;242m•\033[0;m $(_zlint_wordwrap_error $error)"
+  done
+}
+
+
+function _zlint_wordwrap_error() {
+  local error="$@"
+  integer length=50
+  integer l
+
+  echo "${error:0:$length}"
+  error=${error:$length}
+
+  while [[ ${#error} -gt $length ]]; do
+    echo "               ${error:0:$length}"
+    error=${error:$length}
+  done
+
+  echo "               $error"
+}
+
+
+function _zlint_error_handler() {
+  local exception="$1" message="${(@)@:2}"
+  echo $message
+}
+
+###
+# Run a string through the list of enabled linters
+###
+function _zlint_process_string() {
+  local line="$1" error
+  typeset -ga errors
+  errors=()
+
+  # Loop through the list of rules and run each one in turn,
+  # appending any errors to the array
+  for rule in $_zlint_rules; do
+    output=$("_zlint_rule_$rule" "$line")
+    if [[ $? -ne 0 ]]; then
+      errors=($errors $output)
+    fi
+  done
+
+  # If errors have been found
+  if [[ ${#errors} -gt 0 ]]; then
+    # Output the list of errors for the string/line
+    _zlint_report_errors $line $errors
+    return 1
+  fi
+}
+
+###
+# Run a file through the list of enabled linters line-by-line
+###
+function _zlint_run_file() {
+  local file="$1" errors=0 state
+  local -a lines
+
+  # Load the file contents into an array
+  IFS=$'\n' lines=($(cat -e $file))
+  line_no=1
+
+  # Loop through each of the lines
+  for line in "${(@f)lines[@]}"; do
+    # Remove the trailing '$' character
+    line=${line:0:(( ${#line} - 1 ))}
+
+    # If the line is blank, skip ahead
+    if [[ -z $line ]]; then
+      line_no=$(( line_no + 1 ))
+      continue
+    fi
+
+    # Run the line through the linters
+    output=$(_zlint_process_string $line)
+    state=$?
+
+    # If errors have been found
+    if [[ $state -ne 0 ]]; then
+      # Find the full filepath (if realpath is installed)
+      if builtin type realpath >/dev/null 2>&1; then
+        file=$(realpath $file)
+      fi
+
+      # Output the filename and line number
+      echo "\033[1;33m$file\033[0;m \033[0;38;5;242m:\033[0;m $line_no"
+
+      # Output the formatted list of errors
+      echo "$output"
+      echo
+
+      # Increment the error count
+      errors=$(( errors + 1 ))
+    fi
+
+    line_no=$(( line_no + 1 ))
+  done
+
+  # If errors have been found, return an error code
+  if [[ $errors -gt 0 ]]; then
+    return 1
+  fi
+}
+
+###
+# Run the linter against the files passed as arguments
+function _zlint_run() {
+  local files=("$@")
+  integer errors=0
+
+  revolver start "Processing..."
+  # Loop through each of the passed files, expanding globs
+  for file in "${~files[@]}"; do
+    revolver update "Processing file $file"
+
+    # Run the file through the linters, and capture the output
+    output=$(_zlint_run_file $file)
+
+    # If errors are found
+    if [[ $? -ne 0 ]]; then
+      # Print the results to the screen
+      echo "$output"
+
+      # Incremement the error count
+      errors=$(( errors + 1 ))
+    fi
+
+  done
+
+  revolver stop
+
+  if [[ ${#errors} -gt 0 ]]; then
+    return 1
+  fi
+
+  echo '\033[0;32mNo errors found\033[0;m'
+}
+
+function _zlint() {
+  local help version string ctx="$1" files="$@"
+
+  zparseopts -D \
+    h=help -help=help \
+    v=version -version=version \
+    s:=string -string:=string
+
+  if [[ -n $help ]]; then
+    _zlint_usage
+    exit
+  fi
+
+  if [[ -n $version ]]; then
+    echo '0.0.1'
+    exit
+  fi
+
+  case $ctx in
+    run )
+      shift
+      ;;
+  esac
+
+  for rule in $_zlint_rules; do
+    source "rules/$rule"
+  done
+
+  if [[ -n $string ]]; then
+    shift string
+    _zlint_process_string $string
+    state=$?
+    crash unload
+    return $state
+  fi
+
+  _zlint_run "$@"
+  state=$?
+  crash unload
+  return $state
+}
+
+_zlint "$@"

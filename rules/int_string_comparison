@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+function _zlint_rule_int_string_comparison() {
+  local line="$@"
+
+  local -A rules
+  rules=(
+    '= is for strings. Use -eq' '\[\[?\s(([0-9]\s=\s.*)|(.*\s=\s[0-9]))\s\]?\]'
+    '< is for strings. Use -lt' '\[\[?\s(([0-9]\s<\s.*)|(.*\s<\s[0-9]))\s\]?\]'
+    '<= is for strings. Use -lte' '\[\[?\s(([0-9]\s<=\s.*)|(.*\s<=\s[0-9]))\s\]?\]'
+    '> is for strings. Use -gt' '\[\[?\s(([0-9]\s>\s.*)|(.*\s>\s[0-9]))\s\]?\]'
+    '>= is for strings. Use -gte' '\[\[?\s(([0-9]\s>=\s.*)|(.*\s>=\s[0-9]))\s\]?\]'
+  )
+
+  for message rule in ${(@kv)rules[@]}; do
+    pcre_compile "$rule"
+
+    if pcre_match $line; then
+      echo $message
+      return 1
+    fi
+  done
+}
