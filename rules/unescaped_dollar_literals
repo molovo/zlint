@@ -3,9 +3,9 @@
 function _zlint_rule_unescaped_dollar_literals() {
   local line="$@"
 
-  pcre_compile '"(.*[^\\](\$)[^a-z_?!\#@*{}]+.*|\$)"'
-
-  if pcre_match $line; then
+  pcre_compile '"(.*[^\\]\$[^a-zA-Z0-9_?!\#@*\{\}\(\)]+.*|\$)+"'
+  pcre_study
+  if pcre_match "$line" 2>&1; then
     echo 'Dollar literals in double-quoted strings must be escaped'
     return 1
   fi

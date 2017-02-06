@@ -4,8 +4,8 @@ function _zlint_rule_escaped_single_quotes() {
   local line="$@"
 
   pcre_compile ''\''[^'\'']+[\\]['\''][^'\'']+'\'''
-
-  if pcre_match $line; then
+  pcre_study
+  if pcre_match "$line" 2>&1; then
     echo 'Single-quoted string must be closed to escape single quotes. '\''This is how it'\\\''s done'\'' will not work. Use '\''This is how it'\''\'\'''\''s done'\'' instead.'
     return 1
   fi

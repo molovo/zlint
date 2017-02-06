@@ -14,8 +14,8 @@ function _zlint_rule_int_string_comparison() {
 
   for message rule in ${(@kv)rules[@]}; do
     pcre_compile "$rule"
-
-    if pcre_match $line; then
+    pcre_study
+    if pcre_match "$line" 2>&1; then
       echo $message
       return 1
     fi

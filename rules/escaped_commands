@@ -4,13 +4,15 @@ function _zlint_rule_escaped_commands() {
   local line="$@"
 
   pcre_compile '^[\\][a-zA-Z-_]+\s?'
-  if pcre_match $line; then
+  pcre_study
+  if pcre_match "$line" 2>&1; then
     echo 'Prefer `command mycommand` instead of `\mycommand` to override aliases'
     return 1
   fi
 
-  pcre_compile '[^'\'']+\\[^'\'']+'
-  if pcre_match $line; then
+  pcre_compile '^[^'\''"]+\\[^'\''"]+$'
+  pcre_study
+  if pcre_match "$line" 2>&1; then
     echo 'Commands containing backslashes should be single quoted'
     return 1
   fi
