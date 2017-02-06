@@ -15,7 +15,7 @@ function _zlint_report_errors() {
   local -a errors; errors=("${(@)@:2}")
 
   # Echo the line of code which raised the errors first
-  echo "  \033[0;38;5;242m${line## }\033[0;m"
+  echo "  \033[0;38;5;242m$line\033[0;m"
 
   # If errors exist, print the first one alongside the heading
   # and then remove it from the list
@@ -64,6 +64,8 @@ function _zlint_process_string() {
   # Loop through the list of rules and run each one in turn,
   # appending any errors to the array
   for rule in $_zlint_rules; do
+    line=$(echo $line | sed -e 's/^[ \t]*//')
+
     output=$("_zlint_rule_$rule" "$line")
     if [[ $? -ne 0 ]]; then
       errors=($errors $output)
