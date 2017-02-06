@@ -66,6 +66,10 @@ function _zlint_process_string() {
   for rule in $_zlint_rules; do
     line=$(echo $line | sed -e 's/^[ \t]*//')
 
+    if [[ ${line:0:1} = "#" ]]; then
+      continue
+    fi
+
     output=$("_zlint_rule_$rule" "$line")
     if [[ $? -ne 0 ]]; then
       errors=($errors $output)
