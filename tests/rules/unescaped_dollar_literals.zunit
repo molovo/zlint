@@ -1,0 +1,119 @@
+#!/usr/bin/env zunit
+
+@setup {
+  zmodload zsh/pcre
+  load ../../rules/unescaped_dollar_literals
+}
+
+@test 'unescaped_dollar_literals matches lone dollar in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "$"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}
+
+@test 'unescaped_dollar_literals matches dollar at end of string in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "foo$"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}
+
+@test 'unescaped_dollar_literals matches dollar in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "There is a $ symbol here"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}
+
+@test 'unescaped_dollar_literals does not match lone dollar in single quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo '\''$'\'''
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match dollar at end of string in single quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo '\''foo$'\'''
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match dollar in single quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo '\''There is a $ symbol here'\'''
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match lone dollar in unquoted string' {
+  run _zlint_rule_unescaped_dollar_literals 'echo $'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+
+@test 'unescaped_dollar_literals does not match dollar at end of unquoted string' {
+  run _zlint_rule_unescaped_dollar_literals 'echo foo$'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match dollar in unquoted string' {
+  run _zlint_rule_unescaped_dollar_literals 'echo There is a $ symbol here'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match variable in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "There is a $var here"'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match variable in unquoted string' {
+  run _zlint_rule_unescaped_dollar_literals 'echo There is a $var here'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match argument in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "There is a $1 here"'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match argument in unquoted string' {
+  run _zlint_rule_unescaped_dollar_literals 'echo There is a $1 here'
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'unescaped_dollar_literals does not match escaped lone dollar in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "\$"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}
+
+@test 'unescaped_dollar_literals does not match escaped dollar at end of string in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "foo\$"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}
+
+@test 'unescaped_dollar_literals does not match escaped dollar in double quotes' {
+  run _zlint_rule_unescaped_dollar_literals 'echo "There is a \$ symbol here"'
+
+  assert $state equals 1
+  assert $output same_as 'Dollar literals in double-quoted strings must be escaped'
+}

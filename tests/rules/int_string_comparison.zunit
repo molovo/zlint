@@ -1,0 +1,168 @@
+#!/usr/bin/env zunit
+
+@setup {
+  zmodload zsh/pcre
+  load ../../rules/int_string_comparison
+}
+
+@test 'int_string_comparison detects < used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var < 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '< is for strings. Use -lt'
+}
+
+@test 'int_string_comparison detects < used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 < $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '< is for strings. Use -lt'
+}
+
+@test 'int_string_comparison detects < used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" < 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '< is for strings. Use -lt'
+
+@test 'int_string_comparison detects < used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 < \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '< is for strings. Use -lt'
+}
+
+@test 'int_string_comparison detects > used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var > 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '> is for strings. Use -gt'
+}
+
+@test 'int_string_comparison detects > used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 > $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '> is for strings. Use -gt'
+}
+
+@test 'int_string_comparison detects > used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" > 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '> is for strings. Use -gt'
+
+@test 'int_string_comparison detects > used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 > \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '> is for strings. Use -gt'
+}
+
+@test 'int_string_comparison detects <= used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var <= 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '<= is for strings. Use -lte'
+}
+
+@test 'int_string_comparison detects <= used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 <= $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '<= is for strings. Use -lte'
+}
+
+@test 'int_string_comparison detects <= used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" <= 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '<= is for strings. Use -lte'
+
+@test 'int_string_comparison detects <= used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 <= \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '<= is for strings. Use -lte'
+}
+
+@test 'int_string_comparison detects >= used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var >= 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '>= is for strings. Use -gte'
+}
+
+@test 'int_string_comparison detects >= used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 >= $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '>= is for strings. Use -gte'
+}
+
+@test 'int_string_comparison detects >= used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" >= 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '>= is for strings. Use -gte'
+
+@test 'int_string_comparison detects >= used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 >= \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '>= is for strings. Use -gte'
+}
+
+@test 'int_string_comparison detects = used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var = 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '= is for strings. Use -eq'
+}
+
+@test 'int_string_comparison detects = used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 = $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '= is for strings. Use -eq'
+}
+
+@test 'int_string_comparison detects = used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" = 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '= is for strings. Use -eq'
+
+@test 'int_string_comparison detects = used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 = \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '= is for strings. Use -eq'
+}
+
+@test 'int_string_comparison detects != used with int on right' {
+  run _zlint_rule_int_string_comparison "[[ $var != 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '!= is for strings. Use -ne'
+}
+
+@test 'int_string_comparison detects != used with int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 != $var ]]"
+
+  assert $state equals 1
+  assert $output same_as '!= is for strings. Use -ne'
+}
+
+@test 'int_string_comparison detects != used with quoted var and int on right' {
+  run _zlint_rule_int_string_comparison "[[ \"$var\" != 5 ]]"
+
+  assert $state equals 1
+  assert $output same_as '!= is for strings. Use -ne'
+
+@test 'int_string_comparison detects != used with quoted var and int on left' {
+  run _zlint_rule_int_string_comparison "[[ 5 != \"$var\" ]]"
+
+  assert $state equals 1
+  assert $output same_as '!= is for strings. Use -ne'
+}

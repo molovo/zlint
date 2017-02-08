@@ -16,5 +16,19 @@
   run _zlint_rule_escaped_commands 'Rainbows \o/'
 
   assert $state equals 1
-  assert $output same_as 'Commands containing backslashes should be single quoted'
+  assert $output same_as 'Commands containing backslashes should be quoted'
+}
+
+@test 'escaped_commands rule does not match single-quoted backslashes' {
+  run _zlint_rule_escaped_commands "'This is a \ within single quotes'"
+
+  assert $state equals 0
+  assert $output is_empty
+}
+
+@test 'escaped_commands rule does not match double-quoted backslashes' {
+  run _zlint_rule_escaped_commands '"This is a \ within double quotes"'
+
+  assert $state equals 0
+  assert $output is_empty
 }
